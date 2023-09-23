@@ -5,7 +5,7 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 
-from python_template import __version__
+from conf_finder import __version__
 
 
 def test_version():
