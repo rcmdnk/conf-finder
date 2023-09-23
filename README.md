@@ -5,7 +5,7 @@
 
 Configuration file finder.
 
-The configuration file/directory is searched for in the following locations:
+The configuration file/directory is searched for in the following locations by default:
 
 - The current directory
 - Git root repository (if the current directory is within a repository)
@@ -41,10 +41,11 @@ $ pip install conf-finder
 ## Usage
 
 ```python
-import conf_finder
+from conf_finder import ConfFinder
 
 
-conf = conf_finder.directory("mytool")
+cf = ConfFinder("mytool")
+print(cf.directory())
 ```
 
 This script searches:
@@ -57,10 +58,11 @@ This script searches:
 If no directory is found, return `$XDG_CONFIG_HOME/mytool` (or `~/.config/mytool`).
 
 ```python
-import conf_finder
+from conf_finder import ConfFinder
 
 
-conf = conf_finder.conf("mytool", "toml")
+cf = ConfFinder("mytool")
+print(cf.conf(exe="toml"))
 ```
 
 This script searches:
@@ -75,10 +77,11 @@ This script searches:
 - **~/.mytool/conf.toml**
 
 ```python
-import conf_finder
+from conf_finder import ConfFinder
 
 
-conf = conf_finder.conf("mytool", "toml", "myconf")
+cf = ConfFinder("mytool")
+print(cf.conf("mytool", "toml", "myconf"))
 ```
 
 This script searches:
