@@ -15,12 +15,12 @@ python = ">=3.9,<3.12"
 gitpython = "^3.1.37"
 
 [tool.poetry.group.dev.dependencies]
-tomli = { version = "2.0.1", python = "<3.11"}
-pytest = "7.4.2"
-pytest-cov = "4.1.0"
-pytest-xdist = "3.3.1"
-pytest-benchmark = "4.0.0"
-pyproject-pre-commit = "0.0.26"
+tomli = { version = "^2.0.1", python = "<3.11"}
+pytest = "^7.4.2"
+pytest-cov = "^4.1.0"
+pytest-xdist = "^3.3.1"
+pytest-benchmark = "^4.0.0"
+pyproject-pre-commit = "^0.0.26"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
