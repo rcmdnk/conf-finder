@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "conf-finder"
-version = "0.0.2"
+version = "0.1.0"
 description = "Configuration file finder."
 authors = ["rcmdnk <rcmdnk@gmail.com>"]
 repository = "https://github.com/rcmdnk/conf-finder"
