@@ -48,7 +48,7 @@ cf = ConfFinder("mytool")
 print(cf.directory())
 ```
 
-This script searches:
+This script searches for:
 
 - **./.mytool**
 - **<Git root directory>/.mytool** if here is under the git repository.
@@ -65,7 +65,7 @@ cf = ConfFinder("mytool")
 print(cf.conf(exe="toml"))
 ```
 
-This script searches:
+This script searches for:
 
 - **./.mytool.toml**
 - **<Git root directory>/.mytool.toml** if here is under the git repository.
@@ -84,7 +84,7 @@ cf = ConfFinder("mytool")
 print(cf.conf("mytool", "toml", "myconf"))
 ```
 
-This script searches:
+This script searches for:
 
 - **./.myconf.toml**
 - **<Git root directory>/.myconf.toml**
@@ -94,3 +94,25 @@ This script searches:
 - **<Git root directory>/.mytool/myconf.toml**
 - **$XDG_CONFIG_HOME/mytool/myconf.toml**
 - **~/.mytool/myconf.toml**
+
+If you wish to search for only files directly placed under the search directories,
+`conf_type` to `'file'`:
+
+```python
+from conf_finder import ConfFinder
+
+
+cf = ConfFinder("mytool", conf_type="file")
+print(cf.conf("mytool", "toml", "myconf"))
+```
+
+This script searches for:
+
+- **./.myconf.toml**
+- **<Git root directory>/.myconf.toml**
+- **$XDG_CONFIG_HOME/myconf.toml**
+- **~/.myconf.toml**
+
+If no file is found, **$XDG_CONFIG_HOME/myconf.toml** is returned.
+
+To search for only directories, `conf_type` to `'dir'` instead.

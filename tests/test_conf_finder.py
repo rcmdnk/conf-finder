@@ -106,7 +106,7 @@ def test_directory(cf, monkeypatch, tmp_path, git_dir):
     assert cf.directory("config") == git_dir / ".mytool"
 
 
-def test_conf(cf, monkeypatch, tmp_path, git_dir):
+def test_conf(cf, monkeypatch, git_dir):
     assert cf.conf() == cf.xdg_config_home() / "mytool" / "conf"
     assert cf.conf(ext="toml") == cf.xdg_config_home() / "mytool" / "conf.toml"
     assert (
@@ -123,3 +123,20 @@ def test_conf(cf, monkeypatch, tmp_path, git_dir):
     assert cf.conf(ext="toml") == git_dir / "test" / ".mytool" / "conf.toml"
     (git_dir / "test" / ".mytool.toml").touch()
     assert cf.conf(ext="toml") == git_dir / "test" / ".mytool.toml"
+
+
+def test_conf_conf_type(cf, monkeypatch, tmp_path):
+    assert cf.conf() == cf.xdg_config_home() / "mytool" / "conf"
+    cf.conf_type = "file"
+    assert cf.conf() == cf.xdg_config_home() / "mytool"
+    monkeypatch.chdir(tmp_path)
+    cf.set_search_dir_list(cf.search_dir_list)
+    (tmp_path / ".mytool.toml").touch()
+    (tmp_path / ".mytool").mkdir(parents=True, exist_ok=True)
+    (tmp_path / ".mytool" / "conf.toml").touch()
+    cf.conf_type = "both"
+    assert cf.conf(ext="toml") == tmp_path / ".mytool.toml"
+    cf.conf_type = "file"
+    assert cf.conf(ext="toml") == tmp_path / ".mytool.toml"
+    cf.conf_type = "dir"
+    assert cf.conf(ext="toml") == tmp_path / ".mytool" / "conf.toml"

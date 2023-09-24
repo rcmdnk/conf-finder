@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import cast
 
 
 @dataclass
@@ -22,6 +23,11 @@ class ConfFinder:
     default_dir: str
         Default base directory used if no directory is found.
         Defaults to XDG config home.
+    conf_type: str
+        Type of the configuration place. Defaults to 'both' to search for both
+        the directory and the file with the name by conf function. If 'dir' is
+        given, only the directory is searched. If 'file' is given, only the
+        file is searched.
     """
 
     name: str
@@ -30,6 +36,7 @@ class ConfFinder:
     )
     non_dot_dir: list[str] = field(default_factory=lambda: ["xdg_config_home"])
     default_dir: str = "xdg_config_home"
+    conf_type: str = "both"
 
     def __post_init__(self) -> None:
         """Post initialization."""
@@ -103,17 +110,21 @@ class ConfFinder:
 
         return Path(os.getenv("XDG_CONFIG_HOME", "~/.config")).expanduser()
 
-    def directory(self, file: str = "") -> Path:
+    def find_directory(
+        self, file: str = "", return_default: bool = True
+    ) -> Path | None:
         """Find the directory for the configuration files.
 
         Parameters
         ----------
         file: str
             If file is given, the directory with the file will be returned.
+        return_default: bool
+            If True, the default directory is returned if no directory is found.
 
         Returns
         -------
-        path: Path
+        directory_path: Path | None
             The configuration directory path.
         """
         for d in self._search_dir_list:
@@ -124,9 +135,44 @@ class ConfFinder:
             if path.is_dir():
                 if not file or (path / file).is_file():
                     return path
-        if self._default_dir in self._non_dot_dir_list:
-            return self._default_dir / self.name
-        return self._default_dir / ("." + self.name)
+        if return_default:
+            if self._default_dir in self._non_dot_dir_list:
+                return self._default_dir / self.name
+            return self._default_dir / ("." + self.name)
+        return None
+
+    def directory(
+        self, file: str = "", return_default: bool = True
+    ) -> Path | None:
+        """Alias of find_directory."""
+        return self.find_directory(file, return_default)
+
+    def find_file(self, file: str, return_default: bool = True) -> Path | None:
+        """Find the configuration file.
+
+        Parameters
+        ----------
+        file: str
+            File name with extension, not dot-prefixed.
+
+        Returns
+        -------
+        file_path: Path | None
+            The configuration file path.
+        """
+        for d in self._search_dir_list:
+            if d in self._non_dot_dir_list:
+                path = d / file
+            else:
+                path = d / ("." + file)
+
+            if path.is_file():
+                return path
+        if return_default:
+            if self._default_dir in self._non_dot_dir_list:
+                return self._default_dir / file
+            return self._default_dir / ("." + file)
+        return None
 
     def conf(self, ext: str = "", file_name: str = "") -> Path:
         """Find the configuration file.
@@ -146,32 +192,19 @@ class ConfFinder:
         path: Path
             The configuration file path.
         """
-        file = file_name if file_name else self.name
-        if ext:
-            file += "." + ext
-
-        for d in self._search_dir_list:
-            if d in self._non_dot_dir_list:
-                path = d / file
-            else:
-                path = d / ("." + file)
-
-            if path.is_file():
+        if self.conf_type in ["both", "file"]:
+            file = file_name if file_name else self.name
+            if ext:
+                file += "." + ext
+            path = self.find_file(
+                file, return_default=(self.conf_type == "file")
+            )
+            if path is not None:
                 return path
 
         file = file_name if file_name else "conf"
         if ext:
             file += "." + ext
-
-        for d in self._search_dir_list:
-            if d in self._non_dot_dir_list:
-                path = d / self.name / file
-            else:
-                path = d / ("." + self.name) / file
-
-            if path.is_file():
-                return path
-
-        if self._default_dir in self._non_dot_dir_list:
-            return self._default_dir / self.name / file
-        return self._default_dir / ("." + self.name) / file
+        return (
+            cast(Path, self.find_directory(file, return_default=True)) / file
+        )
