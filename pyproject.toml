@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "conf-finder"
-version = "0.1.1"
+version = "0.1.2"
 description = "Configuration file finder."
 authors = ["rcmdnk <rcmdnk@gmail.com>"]
 repository = "https://github.com/rcmdnk/conf-finder"
@@ -11,7 +11,7 @@ keywords = ["XGB", "XGB_CONFIG_HOME", "Git", "CONFIG"]
 classifiers = []
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = "^3.9"
 gitpython = "^3.1.37"
 
 [tool.poetry.group.dev.dependencies]
@@ -20,7 +20,7 @@ pytest = "^7.4.2"
 pytest-cov = "^4.1.0"
 pytest-xdist = "^3.3.1"
 pytest-benchmark = "^4.0.0"
-pyproject-pre-commit = "^0.0.26"
+pyproject-pre-commit = "^0.0.28"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
