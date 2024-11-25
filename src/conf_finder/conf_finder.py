@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import cast
@@ -48,17 +50,16 @@ class ConfFinder:
         self.set_non_dot_dir_list(self.non_dot_dir)
 
     def get_dir_path(self, dir_name: str) -> Path | None:
-        match dir_name.lower():
-            case "cwd":
-                return self.cwd()
-            case "git_root" | "git":
-                return self.git_root()
-            case "xdg_config_home" | "xdg":
-                return self.xdg_config_home()
-            case "home":
-                return self.home()
-            case _:
-                return Path(dir_name)
+        name = dir_name.lower()
+        if name == "cwd":
+            return self.cwd()
+        elif name in ["git_root", "git"]:
+            return self.git_root()
+        elif name in ["xdg_config_home", "xdg"]:
+            return self.xdg_config_home()
+        elif name == "home":
+            return self.home()
+        return Path(dir_name)
 
     def set_default_dir(self, default_dir: str) -> None:
         if (path := self.get_dir_path(default_dir)) is None:
