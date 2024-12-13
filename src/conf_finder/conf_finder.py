@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 @dataclass
@@ -28,13 +31,14 @@ class ConfFinder:
     conf_type: str
         Type of the configuration place. Defaults to 'both' to search for both
         the directory and the file with the name by conf function. If 'dir' is
-        given, only the directory is searched. If 'file' is given, only the
-        file is searched.
+        given, only the directory is searched for. If 'file' is given, only the
+        file is searched for.
+
     """
 
     name: str
     search_dir_list: list[str] = field(
-        default_factory=lambda: ["cwd", "git_root", "xdg_config_home", "home"]
+        default_factory=lambda: ["cwd", "git_root", "xdg_config_home", "home"],
     )
     non_dot_dir: list[str] = field(default_factory=lambda: ["xdg_config_home"])
     default_dir: str = "xdg_config_home"
@@ -53,19 +57,21 @@ class ConfFinder:
         name = dir_name.lower()
         if name == "cwd":
             return self.cwd()
-        elif name in ["git_root", "git"]:
+        if name in ["git_root", "git"]:
             return self.git_root()
-        elif name in ["xdg_config_home", "xdg"]:
+        if name in ["xdg_config_home", "xdg"]:
             return self.xdg_config_home()
-        elif name == "home":
+        if name == "home":
             return self.home()
         return Path(dir_name)
 
     def set_default_dir(self, default_dir: str) -> None:
         if (path := self.get_dir_path(default_dir)) is None:
             if default_dir in ["git_root", "git"]:
-                raise ValueError("Git repository is not found.")
-            raise ValueError(f"Invalid default_dir: {default_dir}")
+                msg = "Git repository is not found."
+                raise ValueError(msg)
+            msg = f"Invalid default_dir: {default_dir}"
+            raise ValueError(msg)
         self._default_dir = path
 
     def get_dir_list(self, dir_list: list[str]) -> list[Path]:
@@ -74,12 +80,14 @@ class ConfFinder:
     def set_search_dir_list(self, search_dir_list: list[str]) -> None:
         self._search_dir_list = self.get_dir_list(search_dir_list)
         if not self._search_dir_list:
-            raise ValueError("search_dir_list is empty.")
+            msg = "search_dir_list is empty."
+            raise ValueError(msg)
 
     def set_non_dot_dir_list(self, non_dot_dir: list[str]) -> None:
         self._non_dot_dir_list = self.get_dir_list(non_dot_dir)
         if not self._non_dot_dir_list:
-            raise ValueError("non_dot_dir is empty.")
+            msg = "non_dot_dir is empty."
+            raise ValueError(msg)
 
     @staticmethod
     def cwd() -> Path:
@@ -112,7 +120,9 @@ class ConfFinder:
         return Path(os.getenv("XDG_CONFIG_HOME", "~/.config")).expanduser()
 
     def find_directory(
-        self, file: str = "", return_default: bool = True
+        self,
+        file: str = "",
+        return_default: bool = True,
     ) -> Path | None:
         """Find the directory for the configuration files.
 
@@ -127,15 +137,15 @@ class ConfFinder:
         -------
         directory_path: Path | None
             The configuration directory path.
+
         """
         for d in self._search_dir_list:
             if d in self._non_dot_dir_list:
                 path = d / self.name
             else:
                 path = d / ("." + self.name)
-            if path.is_dir():
-                if not file or (path / file).is_file():
-                    return path
+            if path.is_dir() and (not file or (path / file).is_file()):
+                return path
         if return_default:
             if self._default_dir in self._non_dot_dir_list:
                 return self._default_dir / self.name
@@ -143,7 +153,9 @@ class ConfFinder:
         return None
 
     def directory(
-        self, file: str = "", return_default: bool = True
+        self,
+        file: str = "",
+        return_default: bool = True,
     ) -> Path | None:
         """Alias of find_directory."""
         return self.find_directory(file, return_default)
@@ -155,11 +167,15 @@ class ConfFinder:
         ----------
         file: str
             File name with extension, not dot-prefixed.
+        return_default: bool
+            Set False to return None if any file is found. If True, default
+            file path is returned if no file is found.
 
         Returns
         -------
         file_path: Path | None
             The configuration file path.
+
         """
         for d in self._search_dir_list:
             if d in self._non_dot_dir_list:
@@ -192,13 +208,15 @@ class ConfFinder:
         -------
         path: Path
             The configuration file path.
+
         """
         if self.conf_type in ["both", "file"]:
             file = file_name if file_name else self.name
             if ext:
                 file += "." + ext
             path = self.find_file(
-                file, return_default=(self.conf_type == "file")
+                file,
+                return_default=(self.conf_type == "file"),
             )
             if path is not None:
                 return path
@@ -206,6 +224,56 @@ class ConfFinder:
         file = file_name if file_name else "conf"
         if ext:
             file += "." + ext
-        return (
-            cast(Path, self.find_directory(file, return_default=True)) / file
+        parent = self.find_directory(
+            file,
+            return_default=True,
         )
+        if parent is None:
+            msg = f"Configuration file not found: {file}"
+            raise FileNotFoundError(msg)
+        return parent / file
+
+    def read(self, ext: str = "", file_name: str = "") -> dict[Any, Any]:
+        """Find the configuration file and read it.
+
+        Parameters
+        ----------
+        ext: str
+            The extension of the configuration file. Only 'toml', 'yaml', 'yml'
+            and 'json' are allowed. For other types, use `conf` to get the file
+            path and read it directly.
+        file_name: str
+            The name (without extension) of the configuration file. If
+            file_name is not given, '.conf' (or 'conf' for non_dot_dir) will be
+            used for files directly under the base directories. For files under
+            the configuration directories, self.name is used.
+
+        Returns
+        -------
+        data: dict
+            The dict object read from the configuration file.
+
+        """
+        conf_path = self.conf(ext, file_name)
+        if ext == "toml":
+            import sys
+
+            if sys.version_info >= (3, 11):
+                import tomllib
+            else:
+                import tomli as tomllib
+            with conf_path.open("rb") as f:
+                return tomllib.load(f)
+        elif ext in ["yaml", "yml"]:
+            import yaml
+
+            with conf_path.open() as f:
+                return yaml.safe_load(f)
+        elif ext == "json":
+            import json
+
+            with conf_path.open() as f:
+                return json.load(f)
+        else:
+            msg = f"Unsupported file extension: {ext}"
+            raise ValueError(msg)

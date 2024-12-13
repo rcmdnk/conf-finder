@@ -8,7 +8,7 @@ except ModuleNotFoundError:
 from conf_finder import __version__
 
 
-def test_version():
-    with open(Path(__file__).parents[1] / "pyproject.toml", "rb") as f:
+def test_version() -> None:
+    with (Path(__file__).parents[1] / "pyproject.toml").open("rb") as f:
         version = tomllib.load(f)["project"]["version"]
     assert version == __version__
