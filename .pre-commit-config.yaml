@@ -5,10 +5,13 @@ repos:
   - id: ruff-lint-diff
   - id: ruff-lint
   - id: ruff-format-diff
+  - id: ruff-format
   - id: mypy
+  - id: numpydoc-validation
   - id: shellcheck
   - id: mdformat-check
   - id: mdformat
+  - id: validate-pyproject
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v5.0.0
   hooks:
