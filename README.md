@@ -44,7 +44,7 @@ $ pip install conf-finder
 from conf_finder import ConfFinder
 
 
-cf = ConfFinder("mytool")
+cf = ConfFinder('mytool')
 print(cf.directory())
 ```
 
@@ -61,8 +61,8 @@ If no directory is found, return `$XDG_CONFIG_HOME/mytool` (or `~/.config/mytool
 from conf_finder import ConfFinder
 
 
-cf = ConfFinder("mytool")
-print(cf.conf(exe="toml"))
+cf = ConfFinder('mytool')
+print(cf.conf(exe='toml'))
 ```
 
 This script searches for:
@@ -80,8 +80,8 @@ This script searches for:
 from conf_finder import ConfFinder
 
 
-cf = ConfFinder("mytool")
-print(cf.conf("mytool", "toml", "myconf"))
+cf = ConfFinder('mytool')
+print(cf.conf('mytool', 'toml', 'myconf'))
 ```
 
 This script searches for:
@@ -102,8 +102,8 @@ If you wish to search for only files directly placed under the search directorie
 from conf_finder import ConfFinder
 
 
-cf = ConfFinder("mytool", conf_type="file")
-print(cf.conf("mytool", "toml", "myconf"))
+cf = ConfFinder('mytool', conf_type='file')
+print(cf.conf('mytool', 'toml', 'myconf'))
 ```
 
 This script searches for:
