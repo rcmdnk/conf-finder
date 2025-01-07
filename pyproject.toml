@@ -1,6 +1,6 @@
 [project]
 name = "conf-finder"
-version = "0.2.2"
+version = "0.2.3"
 description = "Configuration file finder."
 authors = [{name = "rcmdnk", email = "rcmdnk@gmail.com"}]
 readme = "README.md"

@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
     from typing import Any
+
+    CONF_TYPE = Literal["both", "dir", "file"]
+    EXT = Literal["", "toml", "yaml", "yml", "json"]
 
 
 @dataclass
@@ -28,7 +31,7 @@ class ConfFinder:
     default_dir: str
         Default base directory used if no directory is found.
         Defaults to XDG config home.
-    conf_type: str
+    conf_type: Literal["both", "dir", "file"]
         Type of the configuration place. Defaults to 'both' to search for both
         the directory and the file with the name by conf function. If 'dir' is
         given, only the directory is searched for. If 'file' is given, only the
@@ -42,10 +45,14 @@ class ConfFinder:
     )
     non_dot_dir: list[str] = field(default_factory=lambda: ["xdg_config_home"])
     default_dir: str = "xdg_config_home"
-    conf_type: str = "both"
+    conf_type: CONF_TYPE = "both"
 
     def __post_init__(self) -> None:
         """Post initialization."""
+        if self.conf_type not in ["both", "dir", "file"]:
+            msg = f"Invalid conf_type: {self.conf_type}"
+            raise ValueError(msg)
+
         self._default_dir: Path
         self._search_dir_list: list[Path]
         self._non_dot_dir_list: list[Path]
@@ -191,12 +198,12 @@ class ConfFinder:
             return self._default_dir / ("." + file)
         return None
 
-    def conf(self, ext: str = "", file_name: str = "") -> Path:
+    def conf(self, ext: EXT = "", file_name: str = "") -> Path:
         """Find the configuration file.
 
         Parameters
         ----------
-        ext: str
+        ext: Literal["", "toml", "yaml", "yml", "json"]
             The extension of the configuration file.
         file_name: str
             The name (without extension) of the configuration file. If
@@ -233,12 +240,12 @@ class ConfFinder:
             raise FileNotFoundError(msg)
         return parent / file
 
-    def read(self, ext: str = "", file_name: str = "") -> dict[Any, Any]:
+    def read(self, ext: EXT = "", file_name: str = "") -> dict[Any, Any]:
         """Find the configuration file and read it.
 
         Parameters
         ----------
-        ext: str
+        ext: Literal["", "toml", "yaml", "yml", "json"]
             The extension of the configuration file. Only 'toml', 'yaml', 'yml'
             and 'json' are allowed. For other types, use `conf` to get the file
             path and read it directly.
