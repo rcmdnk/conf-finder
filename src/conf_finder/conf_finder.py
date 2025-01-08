@@ -289,7 +289,12 @@ class ConfFinder:
         msg = f'Configuration file not found: {file}'
         raise FileNotFoundError(msg)
 
-    def read(self, ext: EXT = 'toml', file_name: str = '') -> dict[Any, Any]:
+    def read(
+        self,
+        ext: EXT = 'toml',
+        file_name: str = '',
+        allow_missing: bool = True,
+    ) -> dict[Any, Any]:
         """Find the configuration file and read it.
 
         Parameters
@@ -301,6 +306,9 @@ class ConfFinder:
         file_name: str
             The name (without extension) of the configuration file used for
             'dir' conf_type. If not given, self.conf_name is used.
+        allow_missing: bool
+            If True, an empty dict is returned if the configuration file is not
+            found. If False, FileNotFoundError is raised.
 
         Returns
         -------
@@ -308,7 +316,14 @@ class ConfFinder:
             The dict object read from the configuration file.
 
         """
-        conf_path = self.conf(ext, file_name)
+        if ext not in ['toml', 'yaml', 'yml', 'json']:
+            msg = f'Unsupported file extension: {ext}'
+            raise ValueError(msg)
+
+        conf_path = self.conf(ext, file_name, return_default=allow_missing)
+        if not conf_path.is_file():
+            return {}
+
         if ext == 'toml':
             import sys
 
@@ -323,11 +338,7 @@ class ConfFinder:
 
             with conf_path.open() as f:
                 return yaml.safe_load(f)
-        elif ext == 'json':
-            import json
+        import json
 
-            with conf_path.open() as f:
-                return json.load(f)
-        else:
-            msg = f'Unsupported file extension: {ext}'
-            raise ValueError(msg)
+        with conf_path.open() as f:
+            return json.load(f)
