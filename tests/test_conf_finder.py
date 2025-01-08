@@ -120,19 +120,19 @@ def test_directory(
     (tmp_path / '.mytool' / 'config').touch()
     monkeypatch.setenv('XDG_CONFIG_HOME', str(tmp_path))
     cf.set_search_dir_list(cf.search_dir_list)
-    assert cf.directory('config') == tmp_path / '.mytool'
+    assert cf.directory('config') == tmp_path / '.mytool' / 'config'
     (git_dir / '.mytool' / 'config').touch()
-    assert cf.directory('config') == git_dir / '.mytool'
+    assert cf.directory('config') == git_dir / '.mytool' / 'config'
 
 
 def test_conf(
     cf: ConfFinder, monkeypatch: pytest.MonkeyPatch, git_dir: Path
 ) -> None:
-    assert cf.conf() == cf.xdg_config_home() / 'mytool' / 'conf'
-    assert cf.conf(ext='toml') == cf.xdg_config_home() / 'mytool' / 'conf.toml'
+    assert cf.conf() == cf.xdg_config_home() / 'mytool'
+    assert cf.conf(ext='toml') == cf.xdg_config_home() / 'mytool.toml'
     assert (
         cf.conf(ext='toml', file_name='myconf')
-        == cf.xdg_config_home() / 'mytool' / 'myconf.toml'
+        == cf.xdg_config_home() / 'mytool.toml'
     )
     monkeypatch.chdir(git_dir / 'test')
     cf.set_search_dir_list(cf.search_dir_list)
@@ -149,9 +149,11 @@ def test_conf(
 def test_conf_conf_type(
     cf: ConfFinder, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    assert cf.conf() == cf.xdg_config_home() / 'mytool' / 'conf'
+    assert cf.conf() == cf.xdg_config_home() / 'mytool'
     cf.conf_type = 'file'
     assert cf.conf() == cf.xdg_config_home() / 'mytool'
+    cf.conf_type = 'dir'
+    assert cf.conf() == cf.xdg_config_home() / 'mytool' / 'conf'
     monkeypatch.chdir(tmp_path)
     cf.set_search_dir_list(cf.search_dir_list)
     types = ['toml', 'yaml', 'json']
