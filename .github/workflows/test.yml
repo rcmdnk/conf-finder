@@ -25,12 +25,13 @@ on:
       main_py_ver:
         description: "Main python version for coverage/tmate."
         type: choice
-        default: "3.12"
+        default: "3.13"
         options:
           - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
+          - "3.13"
 
       tmate:
         type: boolean
@@ -41,7 +42,7 @@ on:
 env:
   MAIN_BRANCH: ${{ inputs.main_branch || 'main' }}
   MAIN_OS: ${{ inputs.main_os || 'ubuntu-latest' }}
-  MAIN_PY_VER: ${{ inputs.main_py_ver || '3.11' }}
+  MAIN_PY_VER: ${{ inputs.main_py_ver || '3.13' }}
   TMATE: ${{ inputs.tmate || 'false' }}
 
 concurrency:
@@ -54,7 +55,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest,macos-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     permissions:
       contents: write
     runs-on: ${{ matrix.os }}
@@ -63,10 +64,10 @@ jobs:
         id: is_main
         run: |
           if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ] && [ "${{ matrix.os }}" = "${{ env.MAIN_OS }}" ] && [ "${{ matrix.python-version }}" = "${{ env.MAIN_PY_VER }}" ];then
-            echo "IS_MAIN=1" >> $GITHUB_ENV
+            echo "IS_MAIN=1" >> "$GITHUB_ENV"
             is_main=1
           else
-            echo "IS_MAIN=0" >> $GITHUB_ENV
+            echo "IS_MAIN=0" >> "$GITHUB_ENV"
             is_main=0
           fi
           if [ "${{ env.TMATE }}" = "true" ];then
@@ -74,9 +75,9 @@ jobs:
               echo "Tmate is enabled and this is not main, skip tests"
               exit 1
             fi
-            echo "DEBUG=1" >> $GITHUB_ENV
+            echo "DEBUG=1" >> "$GITHUB_ENV"
           else
-            echo "DEBUG=0" >> $GITHUB_ENV
+            echo "DEBUG=0" >> "$GITHUB_ENV"
           fi
       - uses: rcmdnk/python-action@v3
         with:

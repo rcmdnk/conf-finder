@@ -4,7 +4,7 @@ version = "0.3.1"
 description = "Configuration file finder."
 authors = [{name = "rcmdnk", email = "rcmdnk@gmail.com"}]
 readme = "README.md"
-license = "apache-2.0"
+license = "Apache-2.0"
 keywords = ["XGB", "XGB_CONFIG_HOME", "Git", "CONFIG"]
 classifiers = []
 requires-python = ">=3.9"
@@ -29,8 +29,8 @@ Repository = "https://github.com/rcmdnk/conf-finder"
 Homepage = "https://github.com/rcmdnk/conf-finder"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.8.0,<0.9.0"]
+build-backend = "uv_build"
 
 [tool.pytest.ini_options]
 addopts = "-n auto"
@@ -54,6 +54,7 @@ ignore = [
   "COM812", "D203", "ISC001", # The following rules may cause conflicts when used with the formatter: `COM812`, `D203`, `ISC001`. To avoid unexpected behavior, we recommend disabling these rules, either by removing them from the `select` or `extend-select` configuration, or adding them to the `ignore` configuration.
   "FBT001", # Boolean-typed positional argument in function definition
   "FBT002", # Boolean default positional argument in function definition
+  "PLC0415", # `import` should be at the top-level of a file
 ]
 
 [tool.ruff.lint.per-file-ignores]
